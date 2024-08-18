@@ -182,3 +182,28 @@ func UpdateNote(w http.ResponseWriter,r *http.Request){
 		json.NewEncoder(w).Encode(response)
 	}
 }
+
+func DeleteNote(w http.ResponseWriter, r *http.Request){
+	noteID := r.PathValue("noteId")
+
+	result := DB.Delete(&Note{},"id = ?" , noteID)
+	if result.RowsAffected==0{
+		w.Header().Set("Content-Type","application/json")
+		w.WriteHeader(http.StatusNotFound)
+		response := map[string]interface{}{
+			"status":  "fail",
+			"message": "No note with that ID exists",
+		}
+		json.NewEncoder(w).Encode(response)
+		return
+	}else if result.Error != nil{
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadGateway)
+		response := map[string]interface{}{
+			"status":  "error",
+			"message": result.Error.Error(),
+		}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+}
